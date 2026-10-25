@@ -20,6 +20,7 @@ export default {
                 address: "",
                 phone: "",
                 favorite: false,
+                interests: [], // THÊM MỚI: danh sách sở thích đã chọn
             },
             message: "",
         };

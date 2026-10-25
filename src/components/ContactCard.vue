@@ -17,5 +17,17 @@ export default {
             <i v-if="contact.favorite" class="fas fa-check"></i>
             <i v-else class="fas fa-times"></i>
         </div>
+
+        <!-- THÊM MỚI: hiển thị các sở thích đã chọn (chỉ hiện khi có dữ liệu) -->
+        <div class="p-1" v-if="contact.interests && contact.interests.length">
+            <strong>Sở thích:&nbsp;</strong>
+            <span
+                v-for="item in contact.interests"
+                :key="item"
+                class="badge badge-info mr-1"
+            >
+                {{ item }}
+            </span>
+        </div>
     </div>
 </template>

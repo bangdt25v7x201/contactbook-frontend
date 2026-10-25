@@ -33,6 +33,46 @@
             </label>
         </div>
 
+        <!-- THÊM MỚI: chọn lĩnh vực yêu thích, chỉ hiện khi đã tick Liên hệ yêu thích -->
+        <div v-if="contactLocal.favorite" class="form-group interest-box">
+            <strong>Chọn lĩnh vực yêu thích</strong>
+            <div class="mt-2">
+                <button
+                    v-for="(items, group) in groups"
+                    :key="group"
+                    type="button"
+                    class="btn btn-sm mr-2"
+                    :class="activeGroup === group ? 'btn-info' : 'btn-outline-info'"
+                    @click="selectGroup(group)"
+                >
+                    {{ group }}
+                </button>
+            </div>
+
+            <div v-if="activeGroup" class="mt-2">
+                <div
+                    class="form-check form-check-inline"
+                    v-for="item in groups[activeGroup]"
+                    :key="item"
+                >
+                    <input
+                        type="checkbox"
+                        class="form-check-input"
+                        :id="'interest-' + item"
+                        :value="item"
+                        v-model="contactLocal.interests"
+                    />
+                    <label class="form-check-label" :for="'interest-' + item">
+                        {{ item }}
+                    </label>
+                </div>
+            </div>
+
+            <p v-if="contactLocal.interests.length" class="mt-2 mb-0">
+                <strong>Đã chọn:</strong> {{ contactLocal.interests.join(", ") }}
+            </p>
+        </div>
+
         <div class="form-group">
             <button class="btn btn-primary">
                 <i class="fas fa-save"></i> Lưu
@@ -55,6 +95,7 @@
 <script>
 import * as yup from "yup";
 import { Form, Field, ErrorMessage } from "vee-validate";
+import { INTEREST_GROUPS } from "@/constants/interests"; // THÊM MỚI
 
 export default {
     components: { Form, Field, ErrorMessage },
@@ -80,13 +121,26 @@ export default {
             }),
         });
         return {
-            // Sao chép props sang biến cục bộ để không sửa trực tiếp props
-            contactLocal: { ...this.contact },
+            // SỬA: sao chép props và đảm bảo luôn có mảng interests
+            contactLocal: {
+                ...this.contact,
+                interests: [...(this.contact.interests || [])],
+            },
             contactFormSchema,
+            groups: INTEREST_GROUPS, // THÊM MỚI: dữ liệu các nhóm
+            activeGroup: "",         // THÊM MỚI: nhóm đang mở
         };
     },
     methods: {
+        // THÊM MỚI: bấm nhóm để mở, bấm lại để đóng
+        selectGroup(group) {
+            this.activeGroup = this.activeGroup === group ? "" : group;
+        },
         submitContact() {
+            // SỬA: không còn yêu thích thì xóa danh sách sở thích
+            if (!this.contactLocal.favorite) {
+                this.contactLocal.interests = [];
+            }
             this.$emit("submit:contact", this.contactLocal);
         },
         deleteContact() {
@@ -98,9 +152,22 @@ export default {
             }
         },
     },
+    // THÊM MỚI: khi sửa liên hệ, tự mở nhóm đã có mục được chọn
+    created() {
+        const found = Object.keys(this.groups).find((g) =>
+            this.groups[g].some((i) => this.contactLocal.interests.includes(i))
+        );
+        if (found) this.activeGroup = found;
+    },
 };
 </script>
 
 <style scoped>
 @import "@/assets/form.css";
+
+/* THÊM MỚI: checkbox sở thích nằm cùng hàng với nhãn */
+.interest-box .form-check-label {
+    display: inline;
+    margin-top: 0;
+}
 </style>
